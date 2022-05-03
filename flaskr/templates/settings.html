@@ -1,0 +1,514 @@
+{% extends 'base.html' %}
+{% block content %}
+    <!--suppress ALL -->
+    <div class="fw-bold h2 p-3">Settings</div>
+    <div class="row px-3">
+        <div class="col">
+            <h3>General</h3>
+        </div>
+    </div>
+    <div class="row px-4">
+        <div class="col">
+            <h4>Locations</h4>
+        </div>
+    </div>
+    <div class="row px-5">
+        <div class="col">
+            <form method="POST" id="location_form" action="/settings/update/location"></form>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tblLocation">
+                {% for location in locations %}
+                    <tr>
+                        <th scope="row">
+                            <input type="hidden" name="location[{{ loop.index }}][id]" value="{{ location.id }}"
+                                   form="location_form">
+                            <input type="text" name="location[{{ loop.index }}][name]" class="form-control"
+                                   value="{{ location.name }}" form="location_form">
+                        </th>
+                        <td>
+                            <button class="btn btn-danger" form="location_form" onclick="deleteRow(this)">Delete
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th scope="row">
+                        <button type="submit" class="btn btn-success" form="location_form">Save</button>
+                    </th>
+                    <td>
+                        <button type="button" class="btn btn-primary" onclick="addLocationRow()">Add</button>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="row px-3">
+        <div class="col">
+            <h3>I/O</h3>
+        </div>
+    </div>
+    <div class="row px-4">
+        <div class="col">
+            <h4>PWM</h4>
+        </div>
+    </div>
+    <div class="row px-5">
+        <div class="col">
+            <form method="POST" id="pwm_form" action="/settings/update/pwm"></form>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Channel</th>
+                        <th>Location</th>
+                        <th>Pin</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tblPWM">
+                {% for pwm in pwms %}
+                    <tr>
+                        <th scope="row">
+                            <input type="hidden" name="pwm[{{ loop.index }}][id]" value="{{ pwm.id }}" form="pwm_form">
+                            <input type="hidden" name="pwm[{{ loop.index }}][channel]" value="{{ pwm.channel }}"
+                                   form="pwm_form">
+                            {{ pwm.channel }}
+                        </th>
+                        <td>
+                            <select class="form-select" name="pwm[{{ loop.index }}][location]" form="pwm_form">
+                            {% for location in locations %}
+                            <option value="{{ location.id }}" {% if pwm.location == location.id %}selected{% endif %}>
+                                {{ location.name }}
+                            </option>
+                            {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select" name="pwm[{{ loop.index }}][pin]"
+                                    form="pwm_form">
+                            {% for pin in pwm_pins[pwm.channel] %}
+                                <option value="{{ pin }}" {% if pwm.pin == pin %}selected{% endif %}>{{ pin }}</option>
+                            {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" form="pwm_form" onclick="deleteRow(this)">Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th scope="row">
+                        <button type="submit" class="btn btn-success" form="pwm_form">Save</button>
+                    </th>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <button type="button" class="btn btn-primary" onclick="addPWMRow()">Add</button>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="row px-4">
+        <div class="col">
+            <h4>Fan</h4>
+        </div>
+    </div>
+    <div class="row px-5">
+        <div class="col">
+            <form method="POST" id="fan_form" action="/settings/update/fan"></form>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Location</th>
+                        <th>Tacho Pin</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tblFan">
+                {% for fan in fans %}
+                    <tr>
+                        <th scope="row">
+                            <input type="hidden" name="fan[{{ loop.index }}][id]" value="{{ fan.id }}" form="fan_form">
+                            <select class="form-select" name="fan[{{ loop.index }}][location]" form="fan_form">
+                                {% for location in locations %}
+                                <option value="{{ location.id }}" {% if fan.location == location.id %}selected{% endif %}>
+                                    {{ location.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </th>
+                        <td>
+                            <select class="form-select" name="fan[{{ loop.index }}][tacho_pin]" form="fan_form">
+                            {% for pin in ports %}
+                                {% if ports[pin].type == 'INPUT' %}
+                                <option value="{{ pin }}" {% if fan.tacho_pin == pin %}selected{% endif %}>
+                                    {{ pin }}
+                                </option>
+                                {% endif %}
+                            {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" form="fan_form" onclick="deleteRow(this)">Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th scope="row">
+                        <button type="submit" class="btn btn-success" form="fan_form">Save</button>
+                    </th>
+                    <td></td>
+                    <td>
+                        <button type="button" class="btn btn-primary" onclick="addFanRow()">Add</button>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="row px-4">
+        <div class="col">
+            <h4>Sensor</h4>
+        </div>
+    </div>
+    <div class="row px-5">
+        <div class="col">
+            <form method="POST" id="sensor_form" action="/settings/update/sensor"></form>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th>Type</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tblSensor">
+                {% for sensor in sensors %}
+                    <tr>
+                        <th scope="row">
+                            <input type="hidden" name="sensor[{{ loop.index }}][id]" value="{{ sensor.id }}"
+                                   form="sensor_form">
+                            <input type="hidden" name="sensor[{{ loop.index }}][bus_id]" value="{{ sensor.bus_id }}"
+                                   form="sensor_form">
+                            {{ sensor.bus_id }}
+                        </th>
+                        <td><input type="hidden" name="sensor[{{ loop.index }}][type]" value="{{ sensor.type }}"
+                                   form="sensor_form">{{ sensor.type }}</td>
+                        <td>
+                            <select class="form-select " name="sensor[{{ loop.index }}][location]" form="sensor_form">
+                                {% for location in locations %}
+                                    <option value="{{ location.id }}" {% if sensor.location == location.id %}selected{% endif %}>
+                                        {{ location.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" form="sensor_form" onclick="deleteRow(this)">Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tfoot>
+                <tr>
+                    <th scope="row">
+                        <button type="submit" class="btn btn-success" form="sensor_form">Save</button>
+                    </th>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <button type="button" class="btn btn-primary" onclick="addSensorRow()">Add</button>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="row px-3 pt-3">
+        <div class="col">
+            <h3>Service</h3>
+        </div>
+    </div>
+    <div class="row px-4">
+        <div class="col">
+            <h4>Temperature Control</h4>
+        </div>
+    </div>
+    <div class="row px-5">
+        <div class="col">
+            <form method="POST" id="fantempduty_form" action="/settings/update/fantempduty"></form>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Location</th>
+                        <th>Temp</th>
+                        <th>Duty</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tblFTD">
+                {% for fanTempDuty in fanTempDuties %}
+                    <tr>
+                        <th scope="row">
+                            <input type="hidden" name="ftd[{{ loop.index }}][id]" value="{{ fanTempDuty.id }}"
+                                   form="fantempduty_form">
+                            <select class="form-select" name="ftd[{{ loop.index }}][location]" form="fantempduty_form">
+                                {% for location in locations %}
+                                <option value="{{ location.id }}" {% if fanTempDuty.location == location.id %}selected{% endif %}>
+                                    {{ location.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </th>
+                        <td>
+                            <select class="form-select" name="ftd[{{ loop.index }}][temp]" form="fantempduty_form">
+                                {% for i in range(0,101) %}
+                                    <option value="{{ i }}"
+                                            {% if fanTempDuty.temperature == i %}selected{% endif %}>{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select" name="ftd[{{ loop.index }}][duty]" form="fantempduty_form">
+                                {% for i in range(20,101) %}
+                                    <option value="{{ i }}"
+                                            {% if fanTempDuty.duty == i %}selected{% endif %}>{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" form="location_form" onclick="deleteRow(this)">Delete
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                <tr>
+                    <th scope="row">
+                        <button type="submit" class="btn btn-success" form="fantempduty_form">Save</button>
+                    </th>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <button type="button" class="btn btn-primary" onclick="addFTDRow()">Add</button>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+    <div class="row px-4">
+        <div class="col">
+            <h4>Nodes</h4>
+        </div>
+    </div>
+    <div class="row px-5">
+        <div class="col">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th>Serial Port</th>
+                        <th>Power Pin</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <!--<tbody>
+                <th:block th:each="node : ${nodes}">
+                    <tr>
+                        <th scope="row" th:text="${node.getName()}">
+                            <label class="srvnodeid" th:value="${node.getName()}" th:text="${node.getName()}"></label>
+                        </th>
+                        <td>
+                            <select class="form-select srvnodetty">
+                                <th:block th:each="i: ${allTTY}">
+                                    <option th:selected="${i == node.getTtyPort()}" th:value="${i}"
+                                            th:text="${i}"></option>
+                                </th:block>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="form-select srvnodepwr">
+                                <th:block th:each="i: ${unassignedPins}">
+                                    <option th:selected="${i == node.getPowerPin()}" th:value="${i}"
+                                            th:text="${i}"></option>
+                                </th:block>
+                            </select>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-danger srvnodedel">Delete</button>
+                        </td>
+                    </tr>
+                </th:block>
+                </tbody>
+                <tfoot th:if="${availaibleTTY.size() > 0}">
+                <tr>
+                    <th scope="row">
+                        <input type="form-select text" id="node-name">
+                    </th>
+                    <td>
+                        <select class="form-select srvnodetty">
+                            <th:block th:each="i: ${availaibleTTY}">
+                                <option th:value="${i}" th:text="${i}"></option>
+                            </th:block>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-select srvnodepwr">
+                            <th:block th:each="i: ${unassignedPins}">
+                                <option th:value="${i}" th:text="${i}"></option>
+                            </th:block>
+                        </select>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-primary srvnodeadd">Add</button>
+                    </td>
+                </tr>
+                </tfoot> -->
+            </table>
+        </div>
+    </div>
+{% endblock %}
+{% block javascript %}
+    <script>
+        function deleteButton() {
+            let deleteButton = document.createElement('button');
+            deleteButton.className = "btn btn-danger";
+            deleteButton.innerHTML = 'Delete';
+            deleteButton.addEventListener('click', deleteNewRow);
+            return deleteButton;
+        }
+
+        function newRowId(table) {
+            if (table.rows.length > 1)
+                return parseInt(
+                    table.rows.item(table.rows.length - 2).cells[0].children[0].name.split("[")[1].slice(0, -1)
+                ) + 1;
+            else
+                return 1;
+        }
+
+        function deleteRow(element) {
+            element.closest('tr').remove();
+        }
+
+        function deleteNewRow() {
+            this.closest('tr').remove()
+        }
+
+        function getLocationItems() {
+            let locationItem = "";
+
+            {%  for location in locations %}
+                locationItem += '<option value="{{ location.id }}">{{ location.name }}</option>';
+            {% endfor %}
+
+            return locationItem;
+        }
+
+        function addLocationRow() {
+            let table = document.getElementById("tblLocation");
+            let row = table.insertRow();
+
+            row.insertCell(0).innerHTML = '<input type="hidden" name="location[' + newRowId(table) + '][id]" value="-1" form="location_form"><input type="text" name="location[' + newRowId(table) + '][name]" class="form-control" form="location_form">';
+            row.insertCell(1).append(deleteButton());
+        }
+
+        function addFTDRow() {
+            let table = document.getElementById("tblFTD");
+            let row = table.insertRow();
+            let tempItem = "";
+            let dutyItem = "";
+
+            for (let i = 0; i < 101; i++)
+                tempItem += '<option value="' + i + '">' + i + '</option>';
+            for (let i = 20; i < 101; i++)
+                dutyItem += '<option value="' + i + '">' + i + '</option>';
+
+            row.insertCell(0).innerHTML = '<input type="hidden" name="ftd[' + newRowId(table) + '][id]" value="-1" form="fantempduty_form"><select class="form-select" name="ftd[' + newRowId(table) + '][location]" form="fantempduty_form" >' + getLocationItems() + '</select>';
+            row.insertCell(1).innerHTML = '<select class="form-select" name="ftd[' + newRowId(table) + '][temp]" form="fantempduty_form" >' + tempItem + '</select>';
+            row.insertCell(2).innerHTML = '<select class="form-select" name="ftd[' + newRowId(table) + '][duty]" form="fantempduty_form" >' + dutyItem + '</select>';
+            row.insertCell(3).append(deleteButton());
+        }
+
+        function addPWMRow() {
+            let table = document.getElementById("tblPWM");
+            let row = table.insertRow();
+            let channelItem = "";
+            let pinItem = "";
+
+            {% for k,v in pwm_pins.items() %}
+                {% if ports[v[0]].use == False and ports[v[1]].use == False %}
+                    channelItem += '<option value="{{ k }}">{{ k }}</option>';
+                    pinItem += '<option value="{{ v[0] }}">{{ v[0] }}</option><option value="{{ v[1] }}">{{ v[1] }}</option>';
+                {% endif %}
+            {% endfor %}
+
+            if(channelItem !== "") {
+                row.insertCell(0).innerHTML = '<input type="hidden" name="pwm[' + newRowId(table) + '][id]" value="-1" form="pwm_form"><select class="form-select" name="pwm[' + newRowId(table) + '][channel]" form="pwm_form" >' + channelItem + '</select>';
+                row.insertCell(1).innerHTML = '<select class="form-select" name="pwm[' + newRowId(table) + '][location]" form="pwm_form" >' + getLocationItems() + '</select>';
+                row.insertCell(2).innerHTML = '<select class="form-select" name="pwm[' + newRowId(table) + '][pin]" form="pwm_form" >' + pinItem + '</select>';
+                row.insertCell(3).append(deleteButton());
+            }
+            else    {
+                alert('No PWM channels left');
+            }
+        }
+
+        function addFanRow()    {
+            let table = document.getElementById("tblFan");
+            let row = table.insertRow();
+            let pinItem = "";
+
+            {% for k,v in ports.items() %}
+                {%  if v.use == False %}
+                pinItem += '<option value="{{ k }}">{{ k }}</option>';
+                {% endif %}
+            {% endfor %}
+
+            if(pinItem !== "") {
+                row.insertCell(0).innerHTML = '<input type="hidden" name="fan[' + newRowId(table) + '][id]" value="-1" form="fan_form"><select class="form-select" name="fan[' + newRowId(table) + '][location]" form="fan_form" >' + getLocationItems() + '</select>';
+                row.insertCell(1).innerHTML = '<select class="form-select" name="fan[' + newRowId(table) + '][tacho_pin]" form="fan_form" >' + pinItem + '</select>';
+                row.insertCell(2).append(deleteButton());
+            }
+            else    {
+                alert('No Inputs left');
+            }
+        }
+
+        function addSensorRow()    {
+            let table = document.getElementById("tblSensor");
+            let row = table.insertRow();
+            let sensorItem = "";
+
+            {% for sensor in av_sensors %}
+                sensorItem += '<option value="{{ sensor }}">{{ sensor }}</option>';
+            {% endfor %}
+
+            if(sensorItem !== "") {
+                row.insertCell(0).innerHTML = '<input type="hidden" name="sensor[' + newRowId(table) + '][id]" value="-1" form="sensor_form"><select class="form-select" name="sensor[' + newRowId(table) + '][bus_id]" form="sensor_form" >' + sensorItem + '</select>';
+                row.insertCell(1).innerHTML = '<input type="hidden" name="sensor[' + newRowId(table) + '][type]" value="1W" form="sensor_form">1W';
+                row.insertCell(2).innerHTML = '<select class="form-select" name="sensor[' + newRowId(table) + '][location]" form="sensor_form" >' + getLocationItems() + '</select>';
+                row.insertCell(3).append(deleteButton());
+            }
+            else    {
+                alert('No Sensors left');
+            }
+        }
+    </script>
+{% endblock %}

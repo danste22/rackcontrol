@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="fw-bold h2 p-3">Dashboard</div>
+    <div class="px-3">
+        <div class="row gap-2">
+            <div class="col">
+                <div class="card text-white {% if fan_status.active == fan_status.total %}bg-success{% elif fan_status.active != fan_status.total %}bg-warning{% elif fan_status.active == 0 %}bg-danger{% endif %}">
+                    <div class="card-header text-center">Fan</div>
+                    <div class="card-body">
+                        <h5 class="card-text text-center">{{ fan_status.active }}/{{ fan_status.total }}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card text-white {% if sensor_status.active == sensor_status.total %}bg-success{% elif sensor_status.active != sensor_status.total %}bg-warning{% elif sensor_status.active == 0 %}bg-danger{% endif %}">
+                    <div class="card-header text-center">Temp. Sensors</div>
+                    <div class="card-body">
+                        <h5 class="card-text text-center">{{ sensor_status.active }}/{{ sensor_status.total }}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card text-white bg-danger">
+                    <div class="card-header text-center">Nodes online</div>
+                    <div class="card-body">
+                        <h5 class="card-text text-center">0/4</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="px-3 pt-3 h4">
+        <h4 class="fw-bold">Stats</h4>
+    </div>
+    <div class="px-3">
+        <h5><u>Temp Sensor</u></h5>
+        <div style="height: 250px;">
+            <canvas id="tempChart"></canvas>
+        </div>
+    </div>
+    <div class="p-3">
+        <h5><u>Fans</u></h5>
+        <div style="height: 250px;">
+            <canvas id="fanChart" height="250"></canvas>
+        </div>
+    </div>
+    <div class="p-3">
+        <h4 class="fw-bold">Nodes</h4>
+        <table class="table">
+            <thead class="table-dark">
+            <tr>
+                <th>Node</th>
+                <th>Status</th>
+                <th>Power</th>
+                <th>Terminal</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>str01</td>
+                <td>Online</td>
+                <td><a href="#">Shutdown</a></td>
+                <td><a href="#">Terminal</a></td>
+            </tr>
+            <tr>
+                <td>k3smaster</td>
+                <td>Online</td>
+                <td><a href="#">Shutdown</a></td>
+                <td><a href="#">Terminal</a></td>
+            </tr>
+            <tr>
+                <td>k3sslaver</td>
+                <td>Offline</td>
+                <td><a href="#">Poweron</a></td>
+                <td>N/A</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <script type="text/javascript">
+        /*<![CDATA[*/
+        const graphColours = [
+            'rgba(255, 99, 132, 0.2)',
+            'rgba(54, 162, 235, 0.2)',
+            'rgba(255, 206, 86, 0.2)',
+            'rgba(75, 192, 192, 0.2)',
+            'rgba(153, 102, 255, 0.2)',
+            'rgba(255, 159, 64, 0.2)'
+        ];
+
+        const options = {
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'right',
+                    align: 'center'
+                }
+            },
+            maintainAspectRatio: false
+        };
+
+        const tempChartConfig = {
+            type: 'line',
+            data: {
+                labels: [
+                    {% for i in sensor_metrics.dates %}
+                        '{{ i }}',
+                    {% endfor %}
+                ],
+                datasets: [
+                    {% for i in sensor_metrics.data %}
+                    {
+                        label: '{{ i }}',
+                        data: [
+                            {% for k in sensor_metrics.data[i] %}
+                                {{ k }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: graphColours[{{ loop.index }}],
+                        borderColor: graphColours[{{ loop.index }}],
+                    },
+                    {% endfor %}
+                ]
+            },
+            options: options
+        };
+        const tempChart = new Chart(document.getElementById('tempChart'), tempChartConfig);
+
+        const fanChartConfig = {
+            type: 'line',
+            data: {
+                labels: [
+                    {% for i in fan_metrics.dates %}
+                        '{{ i }}',
+                    {% endfor %}
+                ],
+                datasets: [
+                    {% for i in fan_metrics.data %}
+                    {
+                        label: '{{ i }}',
+                        data: [
+                            {% for k in fan_metrics.data[i] %}
+                                {{ k }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: graphColours[{{ loop.index }}],
+                        borderColor: graphColours[{{ loop.index }}],
+                    },
+                    {% endfor %}
+                ]
+            },
+            options: options
+        };
+        const fanChart = new Chart(document.getElementById('fanChart'), fanChartConfig);
+        /*]]>*/
+    </script>
+{% endblock %}

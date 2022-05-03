@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="fw-bold h2 p-3">Console</div>
+    <div class="px-3">
+        <div class="gap-3 btn-toolbar" role="toolbar">
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="nodeSelect" data-bs-toggle="dropdown"
+                    aria-expanded="false">Node
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Node 01</a></li>
+                <li><a class="dropdown-item" href="#">Node 02</a></li>
+                <li><a class="dropdown-item" href="#">Node 03</a></li>
+                <li><a class="dropdown-item" href="#">Node 04</a></li>
+            </ul>
+            <button class="btn btn-secondary dropdown-toggle" type="button" id="powerSelect" data-bs-toggle="dropdown"
+                    aria-expanded="false">Power
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Power up</a></li>
+                <li><a class="dropdown-item" href="#">Shutdown</a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li><a class="dropdown-item" href="#">Force Shutdown</a></li>
+            </ul>
+            <button type="button" class="btn btn-secondary">Export Screen</button>
+        </div>
+    </div>
+    <div class="p-3">
+        <label for="terminalText">Console</label>
+        <textarea class="form-control bg-dark text-success border-0" id="terminalText" rows="24" wrap="off"
+                data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false"></textarea>
+    </div>
+{% endblock %}
