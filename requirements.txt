@@ -3,3 +3,4 @@ Flask-Minify==0.39
 Flask-SQLAlchemy==2.5.1
 Flask-APScheduler==1.12.3
 pigpio==1.78
+setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
